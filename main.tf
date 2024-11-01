@@ -1,6 +1,5 @@
 # Specify the provider (AWS) and use the named profile 'demo_account'
 provider "aws" {
-  profile = "demo_account"  # Use the 'demo_account' profile from AWS credentials
   region  = "us-east-1"     # Replace with your preferred region
 }
 
