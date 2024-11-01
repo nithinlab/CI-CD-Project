@@ -1,0 +1,62 @@
+name: Terraform EC2 and Docker Automation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Terraform
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.9.8 
+
+    # Step 3: Initialize Terraform
+    - name: Initialize Terraform
+      run: terraform init
+
+    # Step 4: Plan Terraform (optional)
+    - name: Terraform Plan
+      run: terraform plan
+
+    # Step 5: Apply Terraform
+    - name: Apply Terraform
+      run: terraform apply -auto-approve
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    # Step 6: Get Public IP of EC2 instance from Terraform output
+    - name: Get EC2 Public IP
+      id: get_ip
+      run: echo "::set-output name=instance_ip::$(terraform output -raw instance_public_ip)"
+
+    # Step 7: Install Docker on the EC2 instance using SSH
+    - name: Install Docker and Pull Docker Image on EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ steps.get_ip.outputs.instance_ip }}
+        username: ubuntu  # Assuming you're using an Ubuntu instance
+        key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your SSH private key as a GitHub secret
+        script: |
+          # Update the package index
+          sudo apt-get update -y
+          # Install Docker
+          sudo apt-get install -y docker.io
+          # Start Docker service
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          # Pull Docker image (replace with your image)
+          sudo docker pull nithinha127/python-static-website:latest
+          # Run Docker container (replace with the desired image)
+          sudo docker run -d -p 8000:8000 nithinha127/python-static-website:latest
+
