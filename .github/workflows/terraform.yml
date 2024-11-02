@@ -41,10 +41,14 @@ jobs:
       if: github.ref == 'refs/heads/main'
 
     # Step 6: Get Public IP of EC2 instance from Terraform output
+    # Step 6: Get Public IP of EC2 instance from Terraform output
     - name: Get Instance Public IP
       id: get_ip
       run: |
-        echo "::set-output name=instance_public_ip::$(terraform output -raw instance_public_ip)"
+        instance_ip=$(terraform output -raw instance_public_ip)
+        echo "EC2 Public IP is: $instance_ip"
+        echo "::set-output name=instance_public_ip::$instance_ip"
+
 
 
     # Step 7: Install Docker on the EC2 instance using SSH
