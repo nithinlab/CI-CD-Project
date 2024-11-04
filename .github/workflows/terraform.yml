@@ -42,11 +42,12 @@ jobs:
 
     # Step 6: Get Public IP of EC2 instance from Terraform output
     # Step 6: Get Public IP of EC2 instance from Terraform output
-    - name: Get Instance Public IP
+    - name: Get Instance Public IP and install jq
       id: get_ip
       run: |
-        echo "$(terraform output -raw instance_public_ip)"
-        echo "PUBLIC_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+        sudo apt-get install jq
+        echo "$(terraform output -json instance_public_ip | jq -r .value)"
+        echo "PUBLIC_IP=$(terraform output -json instance_public_ip | jq -r .value)" >> $GITHUB_ENV
         echo "$GITHUB_ENV"
 
     # Step 7: Install Docker on the EC2 instance using SSH
