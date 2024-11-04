@@ -55,8 +55,8 @@ jobs:
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
         chmod 600 private_key.pem
-        echo "Attempting to SSH into ubuntu@$instance_public_ip"
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@PUBLIC_IP << 'EOF'
+        echo "Attempting to SSH into ubuntu@$PUBLIC_IP"
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$PUBLIC_IP << 'EOF'
           # Update the package index
           sudo apt-get update -y
           # Install Docker
@@ -69,4 +69,5 @@ jobs:
           # Run Docker container
           sudo docker run -d -p 8000:8000 nithinha127/python-static-website:latest
         EOF
-
+      env:
+        PUBLIC_IP: ${{ env.PUBLIC_IP }}
